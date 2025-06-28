@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # Servicio API REST
+  inventario-api:
+    build: .
+    container_name: inventario-api
+    command: ["api"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    networks:
+      - inventario-network
+
+  # Servicio Web (Streamlit)
+  inventario-web:
+    build: .
+    container_name: inventario-web
+    command: ["web"]
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    networks:
+      - inventario-network
+    depends_on:
+      - inventario-api
+
+  # Servicio de pruebas (ejecuta una vez y se detiene)
+  inventario-test:
+    build: .
+    container_name: inventario-test
+    command: ["test"]
+    volumes:
+      - ./data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - inventario-network
+    profiles:
+      - testing
+
+networks:
+  inventario-network:
+    driver: bridge
+
+volumes:
+  inventario-data: 
